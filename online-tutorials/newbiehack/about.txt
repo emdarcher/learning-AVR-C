@@ -1,0 +1,4 @@
+code from doing the stuff from the tutorial on this site:
+https://www.newbiehack.com/MicrocontrollerIntroductionABeginnersGuidetotheAtmelAVRAtmega32.aspx
+
+some may be done on ATtiny85?
