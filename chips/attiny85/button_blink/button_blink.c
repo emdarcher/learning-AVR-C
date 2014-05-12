@@ -17,7 +17,7 @@ PORTB |= (1 << PB3 ); //setup internall pullup resistor on PB3
 
     while (1)
     {
-        PORTB ^= ( 1 << PB4 ) //toggle PB4 and led
+        PORTB ^= ( 1 << PB4 ); //toggle PB4 and led
 
 	//delay differences based on button input
 	if ( bit_is_clear(PB3,1))
