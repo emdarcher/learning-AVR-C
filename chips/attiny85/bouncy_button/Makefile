@@ -1,5 +1,5 @@
-PRG            = demo
-OBJ            = demo.o
+PRG            = bouncy_button
+OBJ            = bouncy_button.o
 #MCU_TARGET     = at90s2313
 #MCU_TARGET     = at90s2333
 #MCU_TARGET     = at90s4414
