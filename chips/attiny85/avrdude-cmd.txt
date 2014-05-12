@@ -1,0 +1,5 @@
+
+
+usual
+avrdude -p t85 -c arduino -b 19200 -P /dev/ttyUSB0 -U hex file
+sometimes use -c stk500v1 to work
