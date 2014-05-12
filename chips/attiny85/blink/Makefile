@@ -1,5 +1,5 @@
-PRG            = demo
-OBJ            = demo.o
+PRG            = blink
+OBJ            = blink.o
 #MCU_TARGET     = at90s2313
 #MCU_TARGET     = at90s2333
 #MCU_TARGET     = at90s4414
@@ -36,7 +36,7 @@ OBJ            = demo.o
 #MCU_TARGET     = atmega6450
 #MCU_TARGET     = atmega649
 #MCU_TARGET     = atmega6490
-MCU_TARGET     = atmega8
+#MCU_TARGET     = atmega8
 #MCU_TARGET     = atmega8515
 #MCU_TARGET     = atmega8535
 #MCU_TARGET     = atmega88
@@ -49,7 +49,7 @@ MCU_TARGET     = atmega8
 #MCU_TARGET     = attiny45
 #MCU_TARGET     = attiny461
 #MCU_TARGET     = attiny84
-#MCU_TARGET     = attiny85
+MCU_TARGET     = attiny85
 #MCU_TARGET     = attiny861
 OPTIMIZE       = -O2
 
