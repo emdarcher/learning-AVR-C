@@ -15,10 +15,10 @@ int main ( void )
 	while (1)
 	{
 		/* set PORTB.0 high */
-		PORTB = (1<<0);
+		//PORTB = (1<<0);
 		
 
-		_delay_ms(1000);
+		//_delay_ms(1000);
 		/* wait (10 * 1200000) cycles = wait 12000000 cycles */
 		//counter = 0;
 		//while (counter != 50)

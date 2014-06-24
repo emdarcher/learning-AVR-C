@@ -53,7 +53,7 @@ MCU_TARGET     = atmega163
 #MCU_TARGET     = attiny861
 #MCU_TARGET	= atmega328p
 
-OPTIMIZE       = -O2
+OPTIMIZE       = -Os
 
 DEFS           =
 LIBS           =
