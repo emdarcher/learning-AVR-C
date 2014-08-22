@@ -1,0 +1,5 @@
+area for code for the old AT90S8515 AVR MCU.
+
+Probably will do some LED related stuff with it, maybe a 4x4x4 LED cube with UART control.
+
+we will see.
