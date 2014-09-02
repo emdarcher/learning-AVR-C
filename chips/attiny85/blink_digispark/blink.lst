@@ -43,9 +43,9 @@ Disassembly of section .text:
   2e:	e8 cf       	rjmp	.-48     	; 0x0 <__vectors>
 
 00000030 <setup>:
-#include <util/delay.h>
 
-#define F_CPU 16500000UL
+#define F_CPU 16000000UL
+//#define F_CPU 8000000
 
 void setup(){
 DDRB |= (1 << PB1);
@@ -54,9 +54,9 @@ DDRB |= (1 << PB1);
   32:	08 95       	ret
 
 00000034 <main>:
-#include <util/delay.h>
 
-#define F_CPU 16500000UL
+#define F_CPU 16000000UL
+//#define F_CPU 8000000
 
 void setup(){
 DDRB |= (1 << PB1);
