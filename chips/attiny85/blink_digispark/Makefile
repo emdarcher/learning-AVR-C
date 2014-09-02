@@ -1,146 +1,206 @@
-PRG            = blink
-OBJ            = blink.o
-#MCU_TARGET     = at90s2313
-#MCU_TARGET     = at90s2333
-#MCU_TARGET     = at90s4414
-#MCU_TARGET     = at90s4433
-#MCU_TARGET     = at90s4434
-#MCU_TARGET     = at90s8515
-#MCU_TARGET     = at90s8535
-#MCU_TARGET     = atmega128
-#MCU_TARGET     = atmega1280
-#MCU_TARGET     = atmega1281
-#MCU_TARGET     = atmega1284p
-#MCU_TARGET     = atmega16
-#MCU_TARGET     = atmega163
-#MCU_TARGET     = atmega164p
-#MCU_TARGET     = atmega165
-#MCU_TARGET     = atmega165p
-#MCU_TARGET     = atmega168
-#MCU_TARGET     = atmega169
-#MCU_TARGET     = atmega169p
-#MCU_TARGET     = atmega2560
-#MCU_TARGET     = atmega2561
-#MCU_TARGET     = atmega32
-#MCU_TARGET     = atmega324p
-#MCU_TARGET     = atmega325
-#MCU_TARGET     = atmega3250
-#MCU_TARGET     = atmega329
-#MCU_TARGET     = atmega3290
-#MCU_TARGET     = atmega48
-#MCU_TARGET     = atmega64
-#MCU_TARGET     = atmega640
-#MCU_TARGET     = atmega644
-#MCU_TARGET     = atmega644p
-#MCU_TARGET     = atmega645
-#MCU_TARGET     = atmega6450
-#MCU_TARGET     = atmega649
-#MCU_TARGET     = atmega6490
-#MCU_TARGET     = atmega8
-#MCU_TARGET     = atmega8515
-#MCU_TARGET     = atmega8535
-#MCU_TARGET     = atmega88
-#MCU_TARGET     = attiny2313
-#MCU_TARGET     = attiny24
-#MCU_TARGET     = attiny25
-#MCU_TARGET     = attiny26
-#MCU_TARGET     = attiny261
-#MCU_TARGET     = attiny44
-#MCU_TARGET     = attiny45
-#MCU_TARGET     = attiny461
-#MCU_TARGET     = attiny84
-MCU_TARGET     = attiny85
-#MCU_TARGET     = attiny861
-OPTIMIZE       = -O2
 
-DEFS           =
-LIBS           =
+##########------------------------------------------------------##########
+##########              Project-specific Details                ##########
+##########    Check these every time you start a new project    ##########
+##########------------------------------------------------------##########
 
-# You should not have to change anything below here.
+MCU   = attiny85
+F_CPU = 16500000
+#BAUD = 9600
+## Also try BAUD = 19200 or 38400 if you're feeling lucky.
 
-CC             = avr-gcc
+## This is where your main() routine lives 
+#MAIN = main.c
+MAIN = blink.c
 
-# Override is only needed by avr-lib build system.
+## If you've split your program into multiple files, 
+## include the additional .c source (in same directory) here 
+## (and include the .h files in your foo.c)
+#LOCAL_SOURCE = 
+#LOCAL_SOURCE = ht1632c.c
+#LOCAL_SOURCE += seven_segs.c
 
-override CFLAGS        = -g -Wall $(OPTIMIZE) -mmcu=$(MCU_TARGET) $(DEFS)
-override LDFLAGS       = -Wl,-Map,$(PRG).map
+## Here you can link to one more directory (and multiple .c files)
+# EXTRA_SOURCE_DIR = 
+# EXTRA_SOURCE_FILES =
+EXTRA_SOURCE_DIR = 
+EXTRA_SOURCE_FILES = 
 
-OBJCOPY        = avr-objcopy
-OBJDUMP        = avr-objdump
+##########------------------------------------------------------##########
+##########                 Programmer Defaults                  ##########
+##########          Set up once, then forget about it           ##########
+##########        (Can override.  See bottom of file.)          ##########
+##########------------------------------------------------------##########
 
-all: $(PRG).elf lst text eeprom
+PROGRAMMER_TYPE = stk500v2
+# extra arguments to avrdude: baud rate, chip type, -F flag, etc.
+PROGRAMMER_ARGS = -P /dev/ttyUSB0 -B8 
 
-$(PRG).elf: $(OBJ)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
+##########------------------------------------------------------##########
+##########                   Makefile Magic!                    ##########
+##########         Summary:                                     ##########
+##########             We want a .hex file                      ##########
+##########        Compile source files into .elf                ##########
+##########        Convert .elf file into .hex                   ##########
+##########        You shouldn't need to edit below.             ##########
+##########------------------------------------------------------##########
 
-# dependency:
-demo.o: demo.c iocompat.h
+## Defined programs / locations
+CC = avr-gcc
+OBJCOPY = avr-objcopy
+OBJDUMP = avr-objdump
+AVRSIZE = avr-size
+AVRDUDE = avrdude
 
-clean:
-	rm -rf *.o $(PRG).elf *.eps *.png *.pdf *.bak 
-	rm -rf *.lst *.map $(EXTRA_CLEAN_FILES)
+## Compilation options, type man avr-gcc if you're curious.
+CFLAGS = -mmcu=$(MCU) -DF_CPU=$(F_CPU)UL -DBAUD=$(BAUD) -Os -I. -I$(EXTRA_SOURCE_DIR)
+CFLAGS += -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums
+CFLAGS +=  --combine -fwhole-program 
+CFLAGS += -Wall -Wstrict-prototypes
+CFLAGS += -g -ggdb
+CFLAGS += -ffunction-sections -fdata-sections -Wl,--gc-sections -Wl,--relax
+CFLAGS += -std=gnu99
+#CFLAGS +=  --combine -fwhole-program 
+## CFLAGS += -Wl,-u,vfprintf -lprintf_flt -lm  ## for floating-point printf
+## CFLAGS += -Wl,-u,vfprintf -lprintf_min      ## for smaller printf
 
-lst:  $(PRG).lst
+## Lump target and extra source files together
+TARGET = $(strip $(basename $(MAIN)))
+SRC = $(TARGET).c
+EXTRA_SOURCE = $(addprefix $(EXTRA_SOURCE_DIR), $(EXTRA_SOURCE_FILES))
+SRC += $(EXTRA_SOURCE) 
+SRC += $(LOCAL_SOURCE) 
 
-%.lst: %.elf
-	$(OBJDUMP) -h -S $< > $@
+## List of all header files
+HEADERS = $(SRC:.c=.h) 
 
-# Rules for building the .text rom images
+## For every .c file, compile an .o object file
+OBJ = $(SRC:.c=.o) 
 
-text: hex bin srec
-
-hex:  $(PRG).hex
-bin:  $(PRG).bin
-srec: $(PRG).srec
+## Generic Makefile targets.  (Only .hex file is necessary)
+all: $(TARGET).hex
 
 %.hex: %.elf
-	$(OBJCOPY) -j .text -j .data -O ihex $< $@
+	$(OBJCOPY) -R .eeprom -O ihex $< $@
 
-%.srec: %.elf
-	$(OBJCOPY) -j .text -j .data -O srec $< $@
+%.elf: $(SRC)
+	$(CC) $(CFLAGS) $(SRC) --output $@ 
 
-%.bin: %.elf
-	$(OBJCOPY) -j .text -j .data -O binary $< $@
+%.eeprom: %.elf
+	$(OBJCOPY) -j .eeprom --change-section-lma .eeprom=0 -O ihex $< $@ 
 
-# Rules for building the .eeprom rom images
+debug:
+	@echo
+	@echo "Source files:"   $(SRC)
+	@echo "MCU, F_CPU, BAUD:"  $(MCU), $(F_CPU), $(BAUD)
+	@echo	
 
-eeprom: ehex ebin esrec
+# Optionally create listing file from .elf
+# This creates approximate assembly-language equivalent of your code.
+# Useful for debugging time-sensitive bits, 
+# or making sure the compiler does what you want.
+disassemble: $(TARGET).lst
 
-ehex:  $(PRG)_eeprom.hex
-ebin:  $(PRG)_eeprom.bin
-esrec: $(PRG)_eeprom.srec
+disasm: disassemble
 
-%_eeprom.hex: %.elf
-	$(OBJCOPY) -j .eeprom --change-section-lma .eeprom=0 -O ihex $< $@ \
-	|| { echo empty $@ not generated; exit 0; }
+eeprom: $(TARGET).eeprom
 
-%_eeprom.srec: %.elf
-	$(OBJCOPY) -j .eeprom --change-section-lma .eeprom=0 -O srec $< $@ \
-	|| { echo empty $@ not generated; exit 0; }
+%.lst: %.elf
+	$(OBJDUMP) -S $< > $@
 
-%_eeprom.bin: %.elf
-	$(OBJCOPY) -j .eeprom --change-section-lma .eeprom=0 -O binary $< $@ \
-	|| { echo empty $@ not generated; exit 0; }
+# Optionally show how big the resulting program is 
+size:  $(TARGET).elf
+	$(AVRSIZE) -C --mcu=$(MCU) $(TARGET).elf
 
-# Every thing below here is used by avr-libc's build system and can be ignored
-# by the casual user.
+clean:
+	rm -f $(TARGET).elf $(TARGET).hex $(TARGET).obj \
+	$(TARGET).o $(TARGET).d $(TARGET).eep $(TARGET).lst \
+	$(TARGET).lss $(TARGET).sym $(TARGET).map $(TARGET)~ \
+	$(TARGET).eeprom
 
-FIG2DEV                 = fig2dev
-EXTRA_CLEAN_FILES       = *.hex *.bin *.srec
+squeaky_clean:
+	rm -f *.elf *.hex *.obj *.o *.d *.eep *.lst *.lss *.sym *.map *~
 
-dox: eps png pdf
+##########------------------------------------------------------##########
+##########              Programmer-specific details             ##########
+##########           Flashing code to AVR using avrdude         ##########
+##########------------------------------------------------------##########
 
-eps: $(PRG).eps
-png: $(PRG).png
-pdf: $(PRG).pdf
+flash: $(TARGET).hex 
+	$(AVRDUDE) -c $(PROGRAMMER_TYPE) -p $(MCU) $(PROGRAMMER_ARGS) -U flash:w:$<
 
-%.eps: %.fig
-	$(FIG2DEV) -L eps $< $@
+## An alias
+program: flash
 
-%.pdf: %.fig
-	$(FIG2DEV) -L pdf $< $@
+flash_eeprom: $(TARGET).eeprom
+	$(AVRDUDE) -c $(PROGRAMMER_TYPE) -p $(MCU) $(PROGRAMMER_ARGS) -U eeprom:w:$<
 
-%.png: %.fig
-	$(FIG2DEV) -L png $< $@
+avrdude_terminal:
+	$(AVRDUDE) -c $(PROGRAMMER_TYPE) -p $(MCU) $(PROGRAMMER_ARGS) -nt
 
+## If you've got multiple programmers that you use, 
+## you can define them here so that it's easy to switch.
+## To invoke, use something like `make flash_arduinoISP`
+flash_usbtiny: PROGRAMMER_TYPE = usbtiny
+flash_usbtiny: PROGRAMMER_ARGS =  # USBTiny works with no further arguments
+flash_usbtiny: flash
 
+flash_usbasp: PROGRAMMER_TYPE = usbasp
+flash_usbasp: PROGRAMMER_ARGS =  # USBasp works with no further arguments
+flash_usbasp: flash
+
+flash_arduinoISP: PROGRAMMER_TYPE = avrisp
+flash_arduinoISP: PROGRAMMER_ARGS = -b 19200 -P /dev/ttyACM0 
+## (for windows) flash_arduinoISP: PROGRAMMER_ARGS = -b 19200 -P com5
+flash_arduinoISP: flash
+
+flash_109: PROGRAMMER_TYPE = avr109
+flash_109: PROGRAMMER_ARGS = -b 9600 -P /dev/ttyUSB0
+flash_109: flash
+
+##########------------------------------------------------------##########
+##########       Fuse settings and suitable defaults            ##########
+##########------------------------------------------------------##########
+
+## Mega 48, 88, 168, 328 default values
+#LFUSE = 0x62
+#HFUSE = 0xdf
+#EFUSE = 0x00
+
+#default fuses for 1MHz operation atmega8515
+#LFUSE = 0xe1
+#HFUSE = 0xd9
+
+#default 1MHz fuses attiny26
+#LFUSE = 0xe1
+#HFUSE = 0xf7
+
+## Generic 
+FUSE_STRING = -U lfuse:w:$(LFUSE):m -U hfuse:w:$(HFUSE):m 
+#-U efuse:w:$(EFUSE):m 
+
+fuses: 
+	$(AVRDUDE) -c $(PROGRAMMER_TYPE) -p $(MCU) \
+	           $(PROGRAMMER_ARGS) $(FUSE_STRING)
+show_fuses:
+	$(AVRDUDE) -c $(PROGRAMMER_TYPE) -p $(MCU) $(PROGRAMMER_ARGS) -nv	
+
+## Called with no extra definitions, sets to defaults
+set_default_fuses:  FUSE_STRING = -U lfuse:w:$(LFUSE):m -U hfuse:w:$(HFUSE):m 
+#-U efuse:w:$(EFUSE):m 
+set_default_fuses:  fuses
+
+## Set the fuse byte for full-speed mode 8MHz
+## Note: can also be set in firmware for modern chips
+set_fast_fuse: LFUSE = 0xe4
+set_fast_fuse: FUSE_STRING = -U lfuse:w:$(LFUSE):m 
+set_fast_fuse: fuses
+
+## Set the EESAVE fuse byte to preserve EEPROM across flashes
+set_eeprom_save_fuse: HFUSE = 0xf3
+set_eeprom_save_fuse: FUSE_STRING = -U hfuse:w:$(HFUSE):m
+set_eeprom_save_fuse: fuses
+
+## Clear the EESAVE fuse byte
+clear_eeprom_save_fuse: FUSE_STRING = -U hfuse:w:$(HFUSE):m
+clear_eeprom_save_fuse: fuses

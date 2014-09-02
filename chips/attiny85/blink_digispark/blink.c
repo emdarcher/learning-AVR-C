@@ -4,7 +4,7 @@
 #include <avr/io.h>
 #include <util/delay.h>
 
-#define F_CPU 16500000UL
+//#define F_CPU 16500000UL
 //#define F_CPU 8000000
 
 void setup(){
