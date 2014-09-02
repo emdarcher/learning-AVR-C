@@ -175,6 +175,14 @@ flash_109: flash
 #LFUSE = 0xe1
 #HFUSE = 0xf7
 
+#default 1MHz (clkdiv/8) fuses attiny85
+LFUSE = 0x62
+HFUSE = 0xdf
+#fase hfuse is 0xe2
+
+#digispark fuses are lfuse=f1 hfuse=5f efuse=fe for no reset and 16.5MHz clk
+
+
 ## Generic 
 FUSE_STRING = -U lfuse:w:$(LFUSE):m -U hfuse:w:$(HFUSE):m 
 #-U efuse:w:$(EFUSE):m 
@@ -185,6 +193,8 @@ fuses:
 show_fuses:
 	$(AVRDUDE) -c $(PROGRAMMER_TYPE) -p $(MCU) $(PROGRAMMER_ARGS) -nv	
 
+
+
 ## Called with no extra definitions, sets to defaults
 set_default_fuses:  FUSE_STRING = -U lfuse:w:$(LFUSE):m -U hfuse:w:$(HFUSE):m 
 #-U efuse:w:$(EFUSE):m 
@@ -192,12 +202,12 @@ set_default_fuses:  fuses
 
 ## Set the fuse byte for full-speed mode 8MHz
 ## Note: can also be set in firmware for modern chips
-set_fast_fuse: LFUSE = 0xe4
+set_fast_fuse: LFUSE = 0xe2
 set_fast_fuse: FUSE_STRING = -U lfuse:w:$(LFUSE):m 
 set_fast_fuse: fuses
 
 ## Set the EESAVE fuse byte to preserve EEPROM across flashes
-set_eeprom_save_fuse: HFUSE = 0xf3
+set_eeprom_save_fuse: HFUSE = 0xd7
 set_eeprom_save_fuse: FUSE_STRING = -U hfuse:w:$(HFUSE):m
 set_eeprom_save_fuse: fuses
 
