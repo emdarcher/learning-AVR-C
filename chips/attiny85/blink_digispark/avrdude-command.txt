@@ -1,0 +1,6 @@
+
+
+command for this file on attiny85 using arduino isp
+avrdude -p t85 -P /dev/ttyUSB0 -c stk500v1 -b 19200  -U flash:w:blink.hex
+
+
